@@ -1,22 +1,33 @@
 const ClothingItem = require("../models/clothingItem");
+const { BAD_REQUEST, NOT_FOUND, SERVER_ERROR } = require("../utils/errors");
 
 const getItems = async (req, res) => {
   try {
     const items = await ClothingItem.find({});
     res.send(items);
   } catch (error) {
-    res.status(500).send({ message: "Error fetching items" });
+    console.error(error);
+    res
+      .status(SERVER_ERROR)
+      .send({ message: "An error has occurred on the server" });
   }
 };
 
 const createItem = async (req, res) => {
   try {
-    const { name, weather, imageUrl, owner } = req.body;
+    const { name, weather, imageUrl } = req.body;
+    const owner = req.user._id;
     const item = new ClothingItem({ name, weather, imageUrl, owner });
     await item.save();
     res.status(201).send(item);
   } catch (error) {
-    res.status(400).send({ message: "Error creating item" });
+    console.error(error);
+    if (error.name === "ValidationError") {
+      return res.status(BAD_REQUEST).send({ message: "Invalid data" });
+    }
+    res
+      .status(SERVER_ERROR)
+      .send({ message: "An error has occurred on the server" });
   }
 };
 
@@ -24,11 +35,17 @@ const deleteItem = async (req, res) => {
   try {
     const item = await ClothingItem.findByIdAndDelete(req.params.itemId);
     if (!item) {
-      return res.status(404).send({ message: "Item not found" });
+      return res.status(NOT_FOUND).send({ message: "Item not found" });
     }
     res.send({ message: "Item deleted successfully" });
   } catch (error) {
-    res.status(500).send({ message: "Error deleting item" });
+    console.error(error);
+    if (error.name === "CastError") {
+      return res.status(BAD_REQUEST).send({ message: "Invalid ID" });
+    }
+    res
+      .status(SERVER_ERROR)
+      .send({ message: "An error has occurred on the server" });
   }
 };
 
