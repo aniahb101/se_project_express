@@ -15,14 +15,15 @@ const getUsers = async (req, res) => {
 
 const getUser = async (req, res) => {
   try {
-    const user = await User.findById(req.params.userId);
-    if (!user) {
-      return res.status(NOT_FOUND).send({ message: "User not found" });
-    }
+    const user = await User.findById(req.params.userId).orFail(
+      new Error("UserNotFound")
+    );
     res.send(user);
   } catch (error) {
     console.error(error);
-    if (error.name === "CastError") {
+    if (error.message === "UserNotFound") {
+      return res.status(NOT_FOUND).send({ message: "User not found" });
+    } else if (error.name === "CastError") {
       return res.status(BAD_REQUEST).send({ message: "Invalid ID" });
     }
     res

@@ -33,14 +33,15 @@ const createItem = async (req, res) => {
 
 const deleteItem = async (req, res) => {
   try {
-    const item = await ClothingItem.findByIdAndDelete(req.params.itemId);
-    if (!item) {
-      return res.status(NOT_FOUND).send({ message: "Item not found" });
-    }
+    const item = await ClothingItem.findByIdAndDelete(req.params.itemId).orFail(
+      new Error("ItemNotFound")
+    );
     res.send({ message: "Item deleted successfully" });
   } catch (error) {
     console.error(error);
-    if (error.name === "CastError") {
+    if (error.message === "ItemNotFound") {
+      return res.status(NOT_FOUND).send({ message: "Item not found" });
+    } else if (error.name === "CastError") {
       return res.status(BAD_REQUEST).send({ message: "Invalid ID" });
     }
     res
@@ -49,4 +50,46 @@ const deleteItem = async (req, res) => {
   }
 };
 
-module.exports = { getItems, createItem, deleteItem };
+const likeItem = async (req, res) => {
+  try {
+    const item = await ClothingItem.findByIdAndUpdate(
+      req.params.itemId,
+      { $addToSet: { likes: req.user._id } },
+      { new: true }
+    ).orFail(new Error("ItemNotFound"));
+    res.send(item);
+  } catch (error) {
+    console.error(error);
+    if (error.message === "ItemNotFound") {
+      return res.status(NOT_FOUND).send({ message: "Item not found" });
+    } else if (error.name === "CastError") {
+      return res.status(BAD_REQUEST).send({ message: "Invalid ID" });
+    }
+    res
+      .status(SERVER_ERROR)
+      .send({ message: "An error has occurred on the server" });
+  }
+};
+
+const dislikeItem = async (req, res) => {
+  try {
+    const item = await ClothingItem.findByIdAndUpdate(
+      req.params.itemId,
+      { $pull: { likes: req.user._id } },
+      { new: true }
+    ).orFail(new Error("ItemNotFound"));
+    res.send(item);
+  } catch (error) {
+    console.error(error);
+    if (error.message === "ItemNotFound") {
+      return res.status(NOT_FOUND).send({ message: "Item not found" });
+    } else if (error.name === "CastError") {
+      return res.status(BAD_REQUEST).send({ message: "Invalid ID" });
+    }
+    res
+      .status(SERVER_ERROR)
+      .send({ message: "An error has occurred on the server" });
+  }
+};
+
+module.exports = { getItems, createItem, deleteItem, likeItem, dislikeItem };

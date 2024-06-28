@@ -22,10 +22,9 @@ const app = express();
 
 app.use(bodyParser.json());
 
-// Authorization middleware
 app.use((req, res, next) => {
   req.user = {
-    _id: "667b83fa98d4d8d5f3388639", // hardcoded test user ID
+    _id: "667b83fa98d4d8d5f3388639",
   };
   next();
 });
