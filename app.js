@@ -3,7 +3,7 @@ const mongoose = require("mongoose");
 const bodyParser = require("body-parser");
 
 const userRoutes = require("./routes/users");
-const itemRoutes = require("./routes/clothingItems");
+const itemRoutes = require("./routes/clothingitems");
 
 mongoose
   .connect("mongodb://127.0.0.1:27017/wtwr_db", {
