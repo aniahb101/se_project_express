@@ -1,13 +1,22 @@
-const ClothingItem = require("../models/clothingItem");
+const winston = require("winston");
+const ClothingItem = require("../models/clothingitem");
 const { BAD_REQUEST, NOT_FOUND, SERVER_ERROR } = require("../utils/errors");
+
+const logger = winston.createLogger({
+  level: "info",
+  format: winston.format.json(),
+  transports: [
+    new winston.transports.Console({ format: winston.format.simple() }),
+  ],
+});
 
 const getItems = async (req, res) => {
   try {
     const items = await ClothingItem.find({});
-    res.send(items);
+    return res.send(items);
   } catch (error) {
-    console.error(error);
-    res
+    logger.error(error.message);
+    return res
       .status(SERVER_ERROR)
       .send({ message: "An error has occurred on the server" });
   }
@@ -19,13 +28,13 @@ const createItem = async (req, res) => {
     const owner = req.user._id;
     const item = new ClothingItem({ name, weather, imageUrl, owner });
     await item.save();
-    res.status(201).send(item);
+    return res.status(201).send(item);
   } catch (error) {
-    console.error(error);
+    logger.error(error.message);
     if (error.name === "ValidationError") {
       return res.status(BAD_REQUEST).send({ message: "Invalid data" });
     }
-    res
+    return res
       .status(SERVER_ERROR)
       .send({ message: "An error has occurred on the server" });
   }
@@ -33,18 +42,19 @@ const createItem = async (req, res) => {
 
 const deleteItem = async (req, res) => {
   try {
-    const item = await ClothingItem.findByIdAndDelete(req.params.itemId).orFail(
+    await ClothingItem.findByIdAndDelete(req.params.itemId).orFail(
       new Error("ItemNotFound")
     );
-    res.send({ message: "Item deleted successfully" });
+    return res.send({ message: "Item deleted successfully" });
   } catch (error) {
-    console.error(error);
+    logger.error(error.message);
     if (error.message === "ItemNotFound") {
       return res.status(NOT_FOUND).send({ message: "Item not found" });
-    } else if (error.name === "CastError") {
+    }
+    if (error.name === "CastError") {
       return res.status(BAD_REQUEST).send({ message: "Invalid ID" });
     }
-    res
+    return res
       .status(SERVER_ERROR)
       .send({ message: "An error has occurred on the server" });
   }
@@ -57,15 +67,16 @@ const likeItem = async (req, res) => {
       { $addToSet: { likes: req.user._id } },
       { new: true }
     ).orFail(new Error("ItemNotFound"));
-    res.send(item);
+    return res.send(item);
   } catch (error) {
-    console.error(error);
+    logger.error(error.message);
     if (error.message === "ItemNotFound") {
       return res.status(NOT_FOUND).send({ message: "Item not found" });
-    } else if (error.name === "CastError") {
+    }
+    if (error.name === "CastError") {
       return res.status(BAD_REQUEST).send({ message: "Invalid ID" });
     }
-    res
+    return res
       .status(SERVER_ERROR)
       .send({ message: "An error has occurred on the server" });
   }
@@ -78,15 +89,16 @@ const dislikeItem = async (req, res) => {
       { $pull: { likes: req.user._id } },
       { new: true }
     ).orFail(new Error("ItemNotFound"));
-    res.send(item);
+    return res.send(item);
   } catch (error) {
-    console.error(error);
+    logger.error(error.message);
     if (error.message === "ItemNotFound") {
       return res.status(NOT_FOUND).send({ message: "Item not found" });
-    } else if (error.name === "CastError") {
+    }
+    if (error.name === "CastError") {
       return res.status(BAD_REQUEST).send({ message: "Invalid ID" });
     }
-    res
+    return res
       .status(SERVER_ERROR)
       .send({ message: "An error has occurred on the server" });
   }

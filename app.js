@@ -1,9 +1,18 @@
 const express = require("express");
 const mongoose = require("mongoose");
 const bodyParser = require("body-parser");
+const winston = require("winston");
 
 const userRoutes = require("./routes/users");
 const itemRoutes = require("./routes/clothingitems");
+
+const logger = winston.createLogger({
+  level: "info",
+  format: winston.format.json(),
+  transports: [
+    new winston.transports.Console({ format: winston.format.simple() }),
+  ],
+});
 
 mongoose
   .connect("mongodb://127.0.0.1:27017/wtwr_db", {
@@ -11,10 +20,10 @@ mongoose
     useUnifiedTopology: true,
   })
   .then(() => {
-    console.log("Connected to MongoDB");
+    logger.info("Connected to MongoDB");
   })
   .catch((error) => {
-    console.error("Error connecting to MongoDB", error);
+    logger.error("Error connecting to MongoDB", error);
   });
 
 const { PORT = 3001 } = process.env;
@@ -32,10 +41,10 @@ app.use((req, res, next) => {
 app.use("/users", userRoutes);
 app.use("/items", itemRoutes);
 
-app.use((req, res, next) => {
+app.use((req, res) => {
   res.status(404).send({ message: "Requested resource not found" });
 });
 
 app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
+  logger.info(`Server is running on port ${PORT}`);
 });
