@@ -6,6 +6,8 @@ const winston = require("winston");
 const userRoutes = require("./routes/users");
 const itemRoutes = require("./routes/clothingitems");
 
+const HTTP_STATUS_NOT_FOUND = 404;
+
 const logger = winston.createLogger({
   level: "info",
   format: winston.format.json(),
@@ -42,7 +44,9 @@ app.use("/users", userRoutes);
 app.use("/items", itemRoutes);
 
 app.use((req, res) => {
-  res.status(404).send({ message: "Requested resource not found" });
+  res
+    .status(HTTP_STATUS_NOT_FOUND)
+    .send({ message: "Requested resource not found" });
 });
 
 app.listen(PORT, () => {

@@ -44,8 +44,8 @@ const getUser = async (req, res) => {
 
 const createUser = async (req, res) => {
   try {
-    const { name, about, avatar } = req.body;
-    const user = new User({ name, about, avatar });
+    const { name, avatar } = req.body;
+    const user = new User({ name, avatar });
     await user.save();
     return res.status(201).send(user);
   } catch (error) {
