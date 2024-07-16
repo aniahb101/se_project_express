@@ -5,6 +5,8 @@ const winston = require("winston");
 
 const userRoutes = require("./routes/users");
 const itemRoutes = require("./routes/clothingitems");
+const { createUser, login } = require("./controllers/users");
+const auth = require("./middlewares/auth");
 
 const HTTP_STATUS_NOT_FOUND = 404;
 
@@ -33,15 +35,13 @@ const app = express();
 
 app.use(bodyParser.json());
 
-app.use((req, res, next) => {
-  req.user = {
-    _id: "667b83fa98d4d8d5f3388639",
-  };
-  next();
-});
+app.post("/signup", createUser);
+app.post("/signin", login);
+app.use("/items", itemRoutes);
+
+app.use(auth);
 
 app.use("/users", userRoutes);
-app.use("/items", itemRoutes);
 
 app.use((req, res) => {
   res
