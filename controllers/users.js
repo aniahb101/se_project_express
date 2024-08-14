@@ -109,7 +109,7 @@ const updateUser = async (req, res) => {
     const user = await User.findByIdAndUpdate(
       req.user._id,
       { name, avatar },
-      { new: true, runValidators: true } // Ensure validators are run
+      { new: true, runValidators: true }
     ).orFail(new Error("UserNotFound"));
     return res.send(user);
   } catch (error) {

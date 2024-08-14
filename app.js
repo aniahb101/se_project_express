@@ -2,6 +2,7 @@ const express = require("express");
 const mongoose = require("mongoose");
 const bodyParser = require("body-parser");
 const winston = require("winston");
+const cors = require("cors");
 
 const userRoutes = require("./routes/users");
 const itemRoutes = require("./routes/clothingitems");
@@ -34,6 +35,7 @@ const { PORT = 3001 } = process.env;
 const app = express();
 
 app.use(bodyParser.json());
+app.use(cors());
 
 app.post("/signup", createUser);
 app.post("/signin", login);

@@ -1,6 +1,11 @@
 const winston = require("winston");
 const ClothingItem = require("../models/clothingitem");
-const { BAD_REQUEST, NOT_FOUND, SERVER_ERROR } = require("../utils/errors");
+const {
+  BAD_REQUEST,
+  NOT_FOUND,
+  SERVER_ERROR,
+  FORBIDDEN,
+} = require("../utils/errors");
 
 const logger = winston.createLogger({
   level: "info",
@@ -42,9 +47,18 @@ const createItem = async (req, res) => {
 
 const deleteItem = async (req, res) => {
   try {
-    await ClothingItem.findByIdAndDelete(req.params.itemId).orFail(
+    const item = await ClothingItem.findById(req.params.itemId).orFail(
       new Error("ItemNotFound")
     );
+
+    // Check if the current user is the owner of the item
+    if (item.owner.toString() !== req.user._id) {
+      return res
+        .status(FORBIDDEN)
+        .send({ message: "You are not authorized to delete this item" });
+    }
+
+    await item.remove();
     return res.send({ message: "Item deleted successfully" });
   } catch (error) {
     logger.error(error.message);
