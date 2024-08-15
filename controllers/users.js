@@ -7,7 +7,6 @@ const {
   NOT_FOUND,
   SERVER_ERROR,
 } = require("../utils/errors");
-const logger = require("../logger");
 const { JWT_SECRET } = require("../utils/config");
 
 const getUsers = async (req, res) => {
@@ -15,7 +14,7 @@ const getUsers = async (req, res) => {
     const users = await User.find({});
     return res.send(users);
   } catch (error) {
-    logger.error(error.message);
+    console.error(error.message);
     return res
       .status(SERVER_ERROR)
       .send({ message: "An error has occurred on the server" });
@@ -29,7 +28,7 @@ const getUser = async (req, res) => {
     );
     return res.send(user);
   } catch (error) {
-    logger.error(error.message);
+    console.error(error.message);
     if (error.message === "UserNotFound") {
       return res.status(NOT_FOUND).send({ message: "User not found" });
     }
@@ -49,7 +48,7 @@ const getCurrentUser = async (req, res) => {
     );
     return res.send(user);
   } catch (error) {
-    logger.error(error.message);
+    console.error(error.message);
     if (error.message === "UserNotFound") {
       return res.status(NOT_FOUND).send({ message: "User not found" });
     }
@@ -74,7 +73,7 @@ const createUser = async (req, res) => {
     await user.save();
     return res.status(201).send(user);
   } catch (error) {
-    logger.error(error.message);
+    console.error(error.message);
     if (error.code === 11000) {
       return res.status(BAD_REQUEST).send({ message: "Email already in use" });
     }
@@ -96,7 +95,7 @@ const login = async (req, res) => {
 
     return res.send({ token });
   } catch (error) {
-    logger.error(error.message);
+    console.error(error.message);
     return res
       .status(UNAUTHORIZED)
       .send({ message: "Incorrect email or password" });
@@ -113,7 +112,7 @@ const updateUser = async (req, res) => {
     ).orFail(new Error("UserNotFound"));
     return res.send(user);
   } catch (error) {
-    logger.error(error.message);
+    console.error(error.message);
     if (error.message === "UserNotFound") {
       return res.status(NOT_FOUND).send({ message: "User not found" });
     }
