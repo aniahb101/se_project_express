@@ -7,6 +7,7 @@ const {
   dislikeItem,
 } = require("../controllers/clothingitems");
 const auth = require("../middlewares/auth");
+
 const router = express.Router();
 
 router.get("/", getItems);
