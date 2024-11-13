@@ -1,23 +1,22 @@
+// app.js
 const express = require("express");
 const mongoose = require("mongoose");
 const bodyParser = require("body-parser");
-const winston = require("winston");
 const cors = require("cors");
+const winston = require("winston");
+const { errors } = require("celebrate");
 
+const { requestLogger, errorLogger } = require("./middlewares/logger");
 const userRoutes = require("./routes/users");
 const itemRoutes = require("./routes/clothingitems");
 const { createUser, login } = require("./controllers/users");
 const auth = require("./middlewares/auth");
+const errorHandler = require("./middlewares/error-handler");
 
 const HTTP_STATUS_NOT_FOUND = 404;
+const { PORT = 3001 } = process.env;
 
-const logger = winston.createLogger({
-  level: "info",
-  format: winston.format.json(),
-  transports: [
-    new winston.transports.Console({ format: winston.format.simple() }),
-  ],
-});
+const app = express();
 
 mongoose
   .connect("mongodb://127.0.0.1:27017/wtwr_db", {
@@ -25,17 +24,16 @@ mongoose
     useUnifiedTopology: true,
   })
   .then(() => {
-    logger.info("Connected to MongoDB");
+    winston.info("Connected to MongoDB");
   })
   .catch((error) => {
-    logger.error("Error connecting to MongoDB", error);
+    winston.error("Error connecting to MongoDB", error);
   });
-
-const { PORT = 3001 } = process.env;
-const app = express();
 
 app.use(bodyParser.json());
 app.use(cors());
+
+app.use(requestLogger);
 
 app.post("/signup", createUser);
 app.post("/signin", login);
@@ -51,6 +49,12 @@ app.use((req, res) => {
     .send({ message: "Requested resource not found" });
 });
 
+app.use(errorLogger);
+
+app.use(errors());
+
+app.use(errorHandler);
+
 app.listen(PORT, () => {
-  logger.info(`Server is running on port ${PORT}`);
+  winston.info(`Server is running on port ${PORT}`);
 });

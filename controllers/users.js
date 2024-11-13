@@ -1,107 +1,88 @@
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const User = require("../models/user");
-const {
-  BAD_REQUEST,
-  CONFLICT,
-  SERVER_ERROR,
-  UNAUTHORIZED,
-  NOT_FOUND,
-} = require("../utils/errors");
 const { JWT_SECRET } = require("../utils/config");
+const {
+  BadRequestError,
+  ConflictError,
+  NotFoundError,
+  UnauthorizedError,
+} = require("../errors/custom-errors");
 
-const getCurrentUser = async (req, res) => {
+const getCurrentUser = async (req, res, next) => {
   try {
     const user = await User.findById(req.user._id).orFail(
-      new Error("UserNotFound")
+      () => new NotFoundError("User not found")
     );
-    return res.send(user);
+    res.send(user);
   } catch (error) {
-    console.error(error.message);
-    if (error.message === "UserNotFound") {
-      return res.status(NOT_FOUND).send({ message: "User not found" });
-    }
-    return res
-      .status(SERVER_ERROR)
-      .send({ message: "An error has occurred on the server" });
+    next(error);
   }
 };
 
-const createUser = async (req, res) => {
+const createUser = async (req, res, next) => {
   try {
     const { name, avatar, email, password } = req.body;
-
     const hashedPassword = await bcrypt.hash(password, 10);
-    const user = new User({ name, avatar, email, password: hashedPassword });
-
-    await user.save();
+    const user = await User.create({
+      name,
+      avatar,
+      email,
+      password: hashedPassword,
+    });
 
     const userWithoutPassword = user.toObject();
     delete userWithoutPassword.password;
 
-    return res.status(201).send(userWithoutPassword);
+    res.status(201).send(userWithoutPassword);
   } catch (error) {
-    console.error(error.message);
     if (error.code === 11000) {
-      return res.status(CONFLICT).send({ message: "Email already in use" });
+      next(new ConflictError("Email already in use"));
+    } else if (error.name === "ValidationError") {
+      next(new BadRequestError("Invalid data"));
+    } else {
+      next(error);
     }
-    if (error.name === "ValidationError") {
-      return res.status(BAD_REQUEST).send({ message: "Invalid data" });
-    }
-    return res
-      .status(SERVER_ERROR)
-      .send({ message: "An error has occurred on the server" });
   }
 };
 
-const login = async (req, res) => {
+const login = async (req, res, next) => {
   try {
     const { email, password } = req.body;
 
     if (!email || !password) {
-      return res
-        .status(BAD_REQUEST)
-        .send({ message: "Email and password are required" });
+      throw new BadRequestError("Email and password are required");
     }
 
     const user = await User.findUserByCredentials(email, password);
-
     const token = jwt.sign({ _id: user._id }, JWT_SECRET, { expiresIn: "7d" });
 
-    return res.send({ token });
+    res.send({ token });
   } catch (error) {
-    console.error(error.message);
     if (error.message === "Incorrect email or password") {
-      return res
-        .status(UNAUTHORIZED)
-        .send({ message: "Incorrect email or password" });
+      next(new UnauthorizedError("Incorrect email or password"));
+    } else {
+      next(error);
     }
-    return res
-      .status(SERVER_ERROR)
-      .send({ message: "An error has occurred on the server" });
   }
 };
 
-const updateUser = async (req, res) => {
+const updateUser = async (req, res, next) => {
   try {
     const { name, avatar } = req.body;
     const user = await User.findByIdAndUpdate(
       req.user._id,
       { name, avatar },
       { new: true, runValidators: true }
-    ).orFail(new Error("UserNotFound"));
-    return res.send(user);
+    ).orFail(() => new NotFoundError("User not found"));
+
+    res.send(user);
   } catch (error) {
-    console.error(error.message);
-    if (error.message === "UserNotFound") {
-      return res.status(NOT_FOUND).send({ message: "User not found" });
-    }
     if (error.name === "ValidationError") {
-      return res.status(BAD_REQUEST).send({ message: "Invalid data" });
+      next(new BadRequestError("Invalid data"));
+    } else {
+      next(error);
     }
-    return res
-      .status(SERVER_ERROR)
-      .send({ message: "An error has occurred on the server" });
   }
 };
 

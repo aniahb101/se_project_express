@@ -20,7 +20,6 @@ module.exports = {
     sourceType: "module",
   },
   rules: {
-    // Allow the use of leading underscores for _id
-    "no-underscore-dangle": ["error", { allow: ["_id"] }],
+    "no-unused-vars": ["error", { argsIgnorePattern: "next" }],
   },
 };
