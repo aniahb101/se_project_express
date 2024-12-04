@@ -1,4 +1,5 @@
 // middlewares/validation.js
+
 const { Joi, celebrate } = require("celebrate");
 const validator = require("validator");
 
@@ -24,6 +25,9 @@ module.exports.validateCreateItem = celebrate({
     imageUrl: Joi.string().required().custom(validateURL).messages({
       "string.empty": 'The "imageUrl" field must be filled in',
       "string.uri": 'The "imageUrl" field must be a valid URL',
+    }),
+    weather: Joi.string().required().messages({
+      "string.empty": 'The "weather" field must be filled in',
     }),
   }),
 });
@@ -62,9 +66,10 @@ module.exports.validateLoginBody = celebrate({
 
 module.exports.validateIdParam = celebrate({
   params: Joi.object().keys({
-    id: Joi.string().hex().length(24).messages({
-      "string.hex": 'The "id" must be a valid hexadecimal value',
-      "string.length": 'The "id" must be 24 characters long',
+    itemId: Joi.string().hex().length(24).required().messages({
+      "string.hex": 'The "itemId" must be a valid hexadecimal value',
+      "string.length": 'The "itemId" must be 24 characters long',
+      "any.required": 'The "itemId" field is required',
     }),
   }),
 });

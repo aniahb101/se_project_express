@@ -1,4 +1,3 @@
-// app.js
 require("dotenv").config();
 const express = require("express");
 const mongoose = require("mongoose");
@@ -18,6 +17,13 @@ const HTTP_STATUS_NOT_FOUND = 404;
 const { PORT = 3001 } = process.env;
 
 const app = express();
+
+// crash-test route
+app.get("/crash-test", () => {
+  setTimeout(() => {
+    throw new Error("Server will crash now");
+  }, 0);
+});
 
 mongoose
   .connect("mongodb://127.0.0.1:27017/wtwr_db", {
