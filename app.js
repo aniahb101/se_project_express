@@ -12,13 +12,16 @@ const itemRoutes = require("./routes/clothingitems");
 const { createUser, login } = require("./controllers/users");
 const auth = require("./middlewares/auth");
 const errorHandler = require("./middlewares/error-handler");
+const {
+  validateSignupBody,
+  validateSigninBody,
+} = require("./middlewares/validation");
 
 const HTTP_STATUS_NOT_FOUND = 404;
 const { PORT = 3001 } = process.env;
 
 const app = express();
 
-// crash-test route
 app.get("/crash-test", () => {
   setTimeout(() => {
     throw new Error("Server will crash now");
@@ -39,15 +42,13 @@ mongoose
 
 app.use(bodyParser.json());
 app.use(cors());
-
 app.use(requestLogger);
 
-app.post("/signup", createUser);
-app.post("/signin", login);
+app.post("/signup", validateSignupBody, createUser);
+app.post("/signin", validateSigninBody, login);
 app.use("/items", itemRoutes);
 
 app.use(auth);
-
 app.use("/users", userRoutes);
 
 app.use((req, res) => {
@@ -57,9 +58,7 @@ app.use((req, res) => {
 });
 
 app.use(errorLogger);
-
 app.use(errors());
-
 app.use(errorHandler);
 
 app.listen(PORT, () => {
