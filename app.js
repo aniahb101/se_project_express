@@ -51,10 +51,10 @@ app.use("/items", itemRoutes);
 app.use(auth);
 app.use("/users", userRoutes);
 
-app.use((req, res) => {
-  res
-    .status(HTTP_STATUS_NOT_FOUND)
-    .send({ message: "Requested resource not found" });
+app.use((req, res, next) => {
+  const error = new Error("Requested resource not found");
+  error.status = HTTP_STATUS_NOT_FOUND;
+  next(error);
 });
 
 app.use(errorLogger);

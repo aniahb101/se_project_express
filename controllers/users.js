@@ -7,7 +7,7 @@ const {
   ConflictError,
   NotFoundError,
   UnauthorizedError,
-} = require("../errors/custom-errors");
+} = require("../errors");
 
 const getCurrentUser = async (req, res, next) => {
   try {

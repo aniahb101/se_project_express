@@ -51,7 +51,6 @@ const deleteItem = async (req, res) => {
       new Error("ItemNotFound")
     );
 
-    // Check if the current user is the owner of the item
     if (item.owner.toString() !== req.user._id) {
       return res
         .status(FORBIDDEN)
