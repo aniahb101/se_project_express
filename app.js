@@ -16,8 +16,8 @@ const {
   validateSignupBody,
   validateSigninBody,
 } = require("./middlewares/validation");
+const { NotFoundError } = require("./errors");
 
-const HTTP_STATUS_NOT_FOUND = 404;
 const { PORT = 3001 } = process.env;
 
 const app = express();
@@ -52,9 +52,7 @@ app.use(auth);
 app.use("/users", userRoutes);
 
 app.use((req, res, next) => {
-  const error = new Error("Requested resource not found");
-  error.status = HTTP_STATUS_NOT_FOUND;
-  next(error);
+  next(new NotFoundError("Requested resource not found"));
 });
 
 app.use(errorLogger);
