@@ -2,10 +2,6 @@
 
 The back-end project is focused on creating a server for the WTWR application. I worked with databases, set up security and testing, and deployed the application on a remote machine. The eventual goal is to create a server with an API and user authorization.
 
-## Domain Names
-
-- **Front-end Application:** [https://styleforecast.jumpingcrab.com](https://styleforecast.jumpingcrab.com)
-- **Back-end Application:** [https://api.styleforecast.jumpingcrab.com](https://api.styleforecast.jumpingcrab.com)
 
 ## Features
 
@@ -22,3 +18,5 @@ The back-end project is focused on creating a server for the WTWR application. I
 - MongoDB
 - Celebrate for validation
 - PM2 for process management
+- vercel
+- render
