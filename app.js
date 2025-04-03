@@ -29,10 +29,11 @@ app.get("/crash-test", () => {
 });
 
 mongoose
-  .connect("mongodb://127.0.0.1:27017/wtwr_db", {
+  .connect(process.env.MONGO_URI, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
   })
+
   .then(() => {
     winston.info("Connected to MongoDB");
   })
